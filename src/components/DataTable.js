@@ -4,8 +4,9 @@ import Button from "@mui/material/Button";
 import axios from "axios";
 import "jspdf-autotable";
 import jsPDF from "jspdf";
-// import * as XLSX from "xlsx";
-import { CSVLink } from "react-csv";
+import * as XLSX from "xlsx";
+import ArticleIcon from "@mui/icons-material/Article";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 
 const DataTable = () => {
   const [data, setData] = useState([]);
@@ -35,39 +36,32 @@ const DataTable = () => {
   }, []);
 
   const exportToExcel = () => {
-    const csvData = data.map((item) => ({
-      Dd: item.id,
-      Fileirstname: item.firstname,
-      Lastname: item.lastname,
-      Age: item.age,
-      Gender: item.gender,
-      Email: item.email,
-      Phone: item.phone,
-    }));
-    const headers = [
-      { label: "ID", key: "ID" },
-      { label: "FirstName", key: "FirstName" },
-      { label: "LastName", key: "LastName" },
-      { label: "Age", key: "Age" },
-      { label: "Gender", key: "Gender" },
-      { label: "Email", key: "Email" },
-      { label: "Phone", key: "Phone" },
-    ];
-    return (
-      <CSVLink data={csvData} headers={headers} filename={"dtable_data.csv"}>
-        Export to Excel
-      </CSVLink>
-    );
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const dataBlob = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(dataBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "table_data.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.text("Data Grid Exported to PDF", 10, 10);
+    doc.text("Table Data Exported to PDF", 10, 10);
 
     const columns = [
       { title: "ID", dataKey: "id" },
-      { title: "FirstName", dataKey: "firstname" },
-      { title: "LastName", dataKey: "lastname" },
+      { title: "FirstName", dataKey: "firstName" },
+      { title: "LastName", dataKey: "lastName" },
       { title: "Age", dataKey: "age" },
       { title: "Gender", dataKey: "gender" },
       { title: "Email", dataKey: "email" },
@@ -76,8 +70,8 @@ const DataTable = () => {
 
     const rows = data.map((item) => ({
       id: item.id,
-      firstname: item.firstname,
-      lastname: item.lastname,
+      firstName: item.firstName,
+      lastName: item.lastName,
       age: item.age,
       gender: item.gender,
       email: item.email,
@@ -89,36 +83,52 @@ const DataTable = () => {
   };
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      <div style={{ marginBottom: "10px" }}>
-        <Button variant="contained" color="primary" onClick={exportToExcel}>
-          Export to Excel
+    <>
+      <div style={{ marginBottom: "10px", marginRight: "72%" }}>
+        <Button
+          style={{ textTransform: "capitalize" }}
+          variant="contained"
+          color="primary"
+          onClick={exportToExcel}
+        >
+          <ArticleIcon /> Excel
         </Button>
         <Button
-          style={{ marginLeft: "10px" }}
+          style={{ marginLeft: "10px", textTransform: "capitalize" }}
           variant="contained"
           color="primary"
           onClick={exportToPDF}
         >
-          Export to PDF
+          <PictureAsPdfIcon /> PDF
         </Button>
       </div>
-      <div style={{ width: "85rem", alignSelf: "center" }}>
-        <DataGrid
-          rows={data}
-          columns={columns}
-          pageSize={10}
-          pagination
-          checkboxSelection
-          onSelectionModelChange={(newSelection) => setSelection(newSelection)}
-          selectionModel={selection}
-          sortingOrder={["asc", "desc"]}
-          onRowSelected={(params) => console.log(params)}
-        />
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <div
+          style={{ width: "80rem", alignSelf: "center", marginBottom: "15px" }}
+        >
+          <DataGrid
+            rows={data}
+            columns={columns}
+            pageSize={10}
+            pagination
+            checkboxSelection
+            onSelectionModelChange={(newSelection) =>
+              setSelection(newSelection)
+            }
+            selectionModel={selection}
+            sortingOrder={["asc", "desc"]}
+            onRowSelected={(params) => console.log(params)}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

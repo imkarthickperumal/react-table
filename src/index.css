@@ -1,23 +1,23 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-weight: 400 !important;
+  font-family: "Inter", sans-serif !important;
+  height: 100vh !important;
+}
+html {
+  height: 100vh !important;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.css-gl260s-MuiDataGrid-columnHeadersInner {
+  background-color: #1976d2;
+  color: aliceblue;
 }
 
-.data-grid-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-.data-grid-table th,
-.data-grid-table td {
-  border: 1px solid #000;
-  padding: 5px;
+.css-zylse7-MuiButtonBase-root-MuiIconButton-root.Mui-disabled {
+  background-color: #0842a0 !important;
+  color: aliceblue !important;
+  border-radius: 25px !important;
+  margin-left: 20px;
 }
