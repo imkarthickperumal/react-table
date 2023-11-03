@@ -7,10 +7,20 @@ import jsPDF from "jspdf";
 import * as XLSX from "xlsx";
 import ArticleIcon from "@mui/icons-material/Article";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
 
 const DataTable = () => {
   const [data, setData] = useState([]);
   const [selection, setSelection] = useState([]);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [selectedRowId, setSelectedRowId] = useState(null);
   const columns = [
     { field: "id", headerName: "ID", width: 70 },
     { field: "firstName", headerName: "FirstName", width: 200 },
@@ -19,6 +29,22 @@ const DataTable = () => {
     { field: "gender", headerName: "Gender", width: 200 },
     { field: "email", headerName: "Email", width: 200 },
     { field: "phone", headerName: "Phone", width: 200 },
+    {
+      field: "action",
+      headerName: "Action",
+      width: 70,
+      width: 120,
+      renderCell: (params) => (
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<DeleteIcon />}
+          onClick={() => handleDeleteClick(params.row.id)}
+        >
+          Delete
+        </Button>
+      ),
+    },
   ];
 
   useEffect(() => {
@@ -82,9 +108,36 @@ const DataTable = () => {
     doc.save("table_data.pdf");
   };
 
+  const handleDeleteClick = (id) => {
+    setSelectedRowId(id);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedRowId) {
+      axios
+        .delete(`https://dummyjson.com/users/${selectedRowId}`)
+        .then(() => {
+          setData(data.filter((item) => item.id !== selectedRowId));
+          setSelectedRowId(null);
+          setOpenDeleteDialog(false);
+        })
+        .catch((error) => {
+          console.error("Error deleting data:", error);
+        });
+    }
+  };
+
+
+
+  const handleDeleteDialogClose = () => {
+    setSelectedRowId(null);
+    setOpenDeleteDialog(false);
+  };
+
   return (
     <>
-      <div style={{ marginBottom: "10px", marginRight: "72%" }}>
+      <div style={{ marginBottom: "10px", marginRight: "82%" }}>
         <Button
           style={{ textTransform: "capitalize" }}
           variant="contained"
@@ -111,7 +164,7 @@ const DataTable = () => {
         }}
       >
         <div
-          style={{ width: "80rem", alignSelf: "center", marginBottom: "15px" }}
+          style={{ width: "90rem", alignSelf: "center", marginBottom: "15px" }}
         >
           <DataGrid
             rows={data}
@@ -128,6 +181,22 @@ const DataTable = () => {
           />
         </div>
       </div>
+      <Dialog open={openDeleteDialog} onClose={handleDeleteDialogClose}>
+        <DialogTitle>Delete Row</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this row?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteDialogClose} variant="contained">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="secondary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
